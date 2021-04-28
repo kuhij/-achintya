@@ -1,0 +1,132 @@
+@import url('https://fonts.googleapis.com/css?family=Lato');
+
+* {
+	box-sizing: border-box;
+}
+
+.swal-footer {
+	text-align: center;
+}
+
+.swal-icon--success__line {
+	background-color: #000;
+}
+
+.swal-icon--success__ring {
+	border: 0
+}
+
+.swal-button {
+  background-color: #fff;
+  padding: 17px;
+  border: 1px solid #000;
+  display: block;
+  margin: 22px;
+  text-align: center;
+  color: #000;
+	margin: auto;
+}
+
+.swal-text, .swal-title, .swal-button {
+	font-family: unset
+}
+
+.swal-button:hover {
+	background-color: #fff;
+}
+
+body {
+
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-direction: column;
+
+	min-height: 100vh;
+  height: '100%' !important;
+	font-family: 'Lato', sans-serif;
+	margin: 0;
+}
+
+#root {
+  height: 100%
+}
+
+
+h1 {
+	letter-spacing: 2px;
+	text-align: center;
+	text-transform: uppercase;
+  margin: auto;
+}
+
+h2 {
+  text-align: center;
+  font-weight: 100;
+  font-size: 20px;
+}
+
+.countdown-wrapper {
+  width: 400px;
+  max-width: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-wrap: wrap;
+  margin: auto;
+}
+
+.countdown-item {
+	color: #111;
+	font-size: 24px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-direction: column;
+    line-height: 30px;
+	margin: 0px;
+    padding-top: 10px;
+	position: relative;
+	width: 100px;
+	height: 100px;
+}
+
+.countdown-item span {
+	color: #333;
+	font-size: 10px;
+	font-weight: 600;
+	text-transform: uppercase;
+}
+
+.countdown-svg {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100px;
+	height: 100px;
+}
+
+footer {
+    background-color: #222;
+    color: #fff;
+    font-size: 14px;
+    bottom: 0;
+    position: fixed;
+    left: 0;
+    right: 0;
+    text-align: center;
+    z-index: 999;
+}
+
+footer p {
+    margin: 10px 0;
+}
+
+footer i {
+    color: red;
+}
+
+footer a {
+    color: #3c97bf;
+    text-decoration: none;
+}
