@@ -25,6 +25,16 @@
     -->
   <title>Achintya</title>
 </head>
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("/firebase-messaging-sw.js").then(function (registration) {
+        console.log('Firebase Worker Registered');
+
+      })
+    })
+  }
+</script>
 
 <body>
   <noscript>You need to enable JavaScript to run this app.</noscript>

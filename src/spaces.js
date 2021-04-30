@@ -2,22 +2,24 @@
 import React, { useState, useEffect } from "react";
 import { Dimensions, View, Text } from "react-native";
 
-import { notification } from 'antd';
+import { notification, Tooltip, Button } from 'antd';
+
 import TextPage from './text';
 import Wallet from './wallet';
 
 import firebase from "firebase";
 import { useSwipeable, Swipeable, LEFT, UP, DOWN } from "react-swipeable";
-
+import swal from 'sweetalert';
 
 import KeyboardArrowRightIcon from '@material-ui/icons/KeyboardArrowRight';
 import KeyboardArrowLeftIcon from '@material-ui/icons/KeyboardArrowLeft';
 import ExitToAppIcon from '@material-ui/icons/ExitToApp';
 
-
+import YoutubeLiveView from "./creatorView";
 import { useParams, useHistory, Redirect } from "react-router-dom";
-
+import { messaging } from './config'
 const { width, height } = Dimensions.get("window");
+
 
 const initialState = {
     value: "",
@@ -25,7 +27,6 @@ const initialState = {
 
 
 const guestId = "guest_" + Math.random().toString(36).slice(2)
-
 export default function Spaces() {
     const { spaceId } = useParams();
     const history = useHistory();
@@ -44,9 +45,10 @@ export default function Spaces() {
     const [showYoutube, setShowYoutube] = useState(false)
     const [creator, setCreator] = useState(false)
 
-
+    const [myVideoId, setMyVideoId] = useState("")
     const [uid, setUid] = useState("")
-
+    const [videoId, setVideoId] = useState("")
+    const [token, setToken] = useState("")
 
     const openNotification = (placement, message) => {
         notification.info({
@@ -57,6 +59,65 @@ export default function Spaces() {
         });
     };
 
+    useEffect(() => {
+
+        messaging.requestPermission().then(function () {
+            console.log("permission granted");
+            return messaging.getToken()
+        })
+            .then(function (token) {
+
+                console.log(token);
+                setToken(token)
+                firebase.database().ref(`/Spaces/${spaceId}/`).update({
+                    token: token
+                })
+            }).catch((error) => {
+                console.log('error occured ', error);
+            })
+
+    }, [])
+
+    useEffect(() => {
+        messaging.onMessage((payload) => {
+
+            console.log("on message works!", payload, payload.data.status);
+        });
+    }, [])
+
+    useEffect(() => {
+        if (creator) {
+            swal({
+                text: 'Enter video id',
+                content: "input",
+                button: {
+                    text: "Proceed",
+                    closeModal: true,
+                },
+            }).then((value) => {
+                if (value) {
+                    firebase.database().ref(`/Spaces/${spaceId}/data`).update({
+                        being: value,
+                    }).then(() => {
+                        setMyVideoId(value)
+                    })
+                } else {
+                    //backToHome()
+                }
+            })
+        }
+    }, [creator])
+
+    useEffect(() => {
+
+        firebase.database().ref(`/Spaces/${spaceId}/data/being`).once("value", function (snap) {
+            if (snap.val()) {
+                setVideoId(snap.val())
+            }
+
+        })
+
+    }, [myVideoId, videoId, spaceId])
 
     const writer = () => {
         const path = firebase.database().ref(`/Spaces/${spaceId}/writer`)
@@ -226,29 +287,56 @@ export default function Spaces() {
         };
     }, [name, turn, online])
 
+    const enterVideoId = (val) => {
+        setState((e) => ({
+            ...e,
+            value: "",
+        }));
+        firebase.database().ref(`/Spaces/${spaceId}/`).update({ writer: name })
+        firebase.database().ref(`/Spaces/${spaceId}/data`).update({ word: "\n\n", being: val }).then(() => {
+            firebase.database().ref(`/Spaces/${spaceId}/data`).update({
+                word: `${"<b style=font-size:17px;>" + (name.charAt(0).toUpperCase() + name.slice(1)) + " :" + "</b>"}  `,
+            })
+        })
+    }
+
     const TakeTurn = () => {
         if (online) {
-            setState((e) => ({
-                ...e,
-                value: "",
-            }));
-            firebase.database().ref(`/Spaces/${spaceId}/`).update({ writer: name })
-            firebase.database().ref(`/Spaces/${spaceId}/data`).update({ word: "\n\n", }).then(() => {
-                firebase.database().ref(`/Spaces/${spaceId}/data`).update({
-                    word: `${"<b style=font-size:17px;>" + (name.charAt(0).toUpperCase() + name.slice(1)) + " :" + "</b>"}  `,
-                })
-            })
 
+            if (myVideoId) {
+                enterVideoId(myVideoId)
+
+            } else {
+                swal({
+                    text: 'Enter video id',
+                    content: "input",
+                    button: {
+                        text: "Proceed",
+                        closeModal: true,
+                    },
+                }).then((value) => {
+
+                    if (value) {
+
+                        setMyVideoId(value)
+                        enterVideoId(value)
+
+                    } else {
+                        console.log('no video id');
+                    }
+                })
+            }
         } else {
             openNotification('bottomLeft', "user is offline.")
         }
     }
 
-    const forward = () => {
-        //setShowVideo(true)
+    const Text = () => {
+
         setShowText(true)
-        setShowYoutube(false)
+
         setShowWallet(false)
+        setShowYoutube(false)
     }
 
     const backward = () => {
@@ -262,6 +350,8 @@ export default function Spaces() {
     const onYouTube = () => {
         setShowVideo(false)
         setShowYoutube(true)
+        setShowWallet(false)
+        setShowText(false)
     }
 
     const onVideo = () => {
@@ -292,6 +382,21 @@ export default function Spaces() {
                     style={{ height: 22, width: 22, margin: 10, position: 'absolute', zIndex: 9, cursor: 'pointer', marginTop: 14, zIndex: 99 }}
                     onClick={backToHome}
                 />
+                {/* {mySpace === spaceId ?
+                    <Tooltip title="sign out">
+                        <View style={{ marginLeft: width <= 600 ? width / 1.05 - 23 : width / 1.05, cursor: 'pointer', position: 'fixed', zIndex: 9, marginTop: 14 }} onClick={onSignOut}>
+                            <ExitToAppIcon />
+                        </View>
+                    </Tooltip>
+                    : null} */}
+                <View style={{ marginLeft: width / 1.15, position: 'absolute', zIndex: 999, marginTop: 20 }}>
+                    <Button style={{ width: width / 10 }} onClick={onYouTube}>YouTube</Button>
+                    <br />
+                    <Button style={{ width: width / 10 }} onClick={backward}>wallet</Button>
+                    <br />
+                    <Button style={{ width: width / 10 }} onClick={Text}>Text</Button>
+                </View>
+
                 {showText ?
                     <View style={{ height: height, }}>
                         {fullData ?
@@ -318,9 +423,19 @@ export default function Spaces() {
                     </View>
                     : null}
 
-                <View style={{ marginTop: height / 2.3, position: 'absolute' }}>
+                {showYoutube ?
+                    <View style={{ height: height }}>
 
-                    {showText ?
+                        <YoutubeLiveView
+                            myName={name} spaceName={spaceId} turn={turn} takeTurn={TakeTurn} online={online} videoId={videoId} myVideoId={myVideoId}
+                        />
+
+                    </View>
+                    : null}
+
+                {/* <View style={{ marginTop: height / 2.3, position: 'absolute' }}>
+
+                    {!showWallet ?
                         <View style={{ cursor: 'pointer', marginLeft: 20, }} onClick={backward}>
                             <KeyboardArrowLeftIcon style={{ color: 'black' }} />
                         </View>
@@ -345,7 +460,7 @@ export default function Spaces() {
                         </View>
                     }
 
-                </View>
+                </View> */}
             </View>
 
         </View>

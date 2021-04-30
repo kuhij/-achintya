@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Dimensions, View, Text, TextInput } from "react-native";
 
-import { notification, Button, Input, Tooltip, Switch } from 'antd';
+import { notification, Button, Input, Tooltip, } from 'antd';
 import ExitToAppIcon from '@material-ui/icons/ExitToApp';
 
 import firebase from "firebase";
@@ -18,6 +18,7 @@ export default function TextPage({ currentData, turn, myName, mySpace, online, t
     const history = useHistory()
     const textRef = useRef()
     const textInputRef = useRef();
+    const scroll = useRef()
 
     let data = state
 
@@ -47,12 +48,23 @@ export default function TextPage({ currentData, turn, myName, mySpace, online, t
         data = doc.body.innerHTML
 
         textRef.current.innerHTML = data
+
+        function Scroll() {
+            var element = scroll.current;
+            if (element) {
+                element.scrollTop = element.scrollHeight
+                console.log(element.scrollHeight, element.scrollIntoView);
+            }
+
+            console.log('called ', element);
+        }
+        Scroll()
         //doc.body.getElementsByTagName("b")[0].innerHTML = ".style{color: blue;}";
         //textRef.current.scrollTop = textRef.current.scrollHeight
 
         console.log(doc.body,);
 
-        console.log(data);
+        //console.log(data);
 
 
     }, [state, showBook])
@@ -97,7 +109,8 @@ export default function TextPage({ currentData, turn, myName, mySpace, online, t
     return (
         <View>
 
-            <View style={{ position: "absolute", height: height, width: width, background: "#fafafa", overscrollBehaviorY: "contain", scrollSnapType: "y proximity", scrollSnapAlign: "end", overflowY: 'auto', }}>
+            <View
+                style={{ position: "absolute", height: height, width: width, background: "#fafafa", overscrollBehaviorY: "contain", scrollSnapType: "y proximity", scrollSnapAlign: "end", overflowY: 'auto', }}>
 
                 <View
                     style={{
@@ -129,15 +142,8 @@ export default function TextPage({ currentData, turn, myName, mySpace, online, t
                             style={{ width: '3%', marginLeft: width < 600 ? width / 1.50 : width / 1.15, position: 'fixed', }}
                         /> */}
 
-                        {mySpace === spaceId ?
-                            <Tooltip title="sign out">
-                                <View style={{ marginLeft: width <= 600 ? width / 1.05 - 23 : width / 1.05, cursor: 'pointer', position: 'fixed' }} onClick={signout}>
-                                    <ExitToAppIcon />
-                                </View>
-                            </Tooltip>
-                            : null}
 
-                        <View style={{ height: 1, background: 'black', marginTop: 42, position: 'fixed', width: width, }}></View>
+                        <View style={{ height: 1, background: 'black', marginTop: height / 17, position: 'fixed', width: width, }}></View>
 
                     </View>
 
@@ -147,9 +153,9 @@ export default function TextPage({ currentData, turn, myName, mySpace, online, t
                     >
 
                         <View
-                            style={{ marginLeft: 10, display: 'flex', flexFlow: 'row', flexWrap: 'wrap', alignItems: 'center', marginTop: 52, overscrollBehaviorY: "contain", scrollSnapType: "y proximity", scrollSnapAlign: "end", }}>
+                            style={{ marginLeft: 10, display: 'flex', flexFlow: 'row', flexWrap: 'wrap', alignItems: 'center', marginTop: height / 14, overscrollBehaviorY: "contain", scrollSnapType: "y proximity", scrollSnapAlign: "end", }} >
 
-                            <Text style={{ lineHeight: 30, width: '98%', margin: 'auto', marginTop: 8, marginBottom: 10 }}>
+                            <Text style={{ lineHeight: 30, width: '98%', margin: 'auto', marginTop: width <= 600 ? height / 35 : height / 70, marginBottom: 10, overflowY: 'scroll', }} ref={scroll}>
 
                                 <span style={{ fontFamily: 'inherit', fontSize: 15, letterSpacing: 0.4, }} ref={textRef}></span>
 
@@ -165,7 +171,14 @@ export default function TextPage({ currentData, turn, myName, mySpace, online, t
 
                             </Text>
                         </View>
-
+                        {turn !== myName ?
+                            <Button
+                                style={{ position: 'fixed', marginTop: height / 1.1 - 32, marginLeft: (width / 2) / 2, width: width / 2, border: 'none', color: 'white', backgroundColor: '#04062f' }}
+                                onClick={takeTurn}
+                            >
+                                Take Turn
+                            </Button>
+                            : null}
                     </View >
 
                 </View>
@@ -176,3 +189,5 @@ export default function TextPage({ currentData, turn, myName, mySpace, online, t
 
     )
 }
+
+//overscrollBehaviorY: "contain", scrollSnapType: "y proximity", scrollSnapAlign: "end",

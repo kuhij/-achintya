@@ -13,6 +13,79 @@ const request = require('request');
 const admin = require('firebase-admin');
 admin.initializeApp();
 
+exports.subscribeToTopic = functions.database.ref('Spaces/{spaceId}/token')
+    .onWrite((change, context) => {
+
+        let topic = change.after.ref.parent.key;
+
+        const registrationToken = change.after.val();
+        console.log(topic, registrationToken);
+
+        if (topic === "none") {
+            topic = change.before.data().subscription
+            console.log(topic);
+            // return admin.messaging().unsubscribeFromTopic(registrationToken, topic).then((response) => {
+            //     // See the MessagingTopicManagementResponse reference documentation
+            //     // for the contents of response.
+            //     return console.log('Successfully unsubscribed to topic:', response, topic);
+            // })
+            //     .catch((error) => {
+            //         return console.log('Error unsubscribed to topic:', error);
+            //     });
+        } else {
+            return admin.messaging().subscribeToTopic(registrationToken, topic).then((response) => {
+                // See the MessagingTopicManagementResponse reference documentation
+                // for the contents of response.
+                console.log('Successfully subscribed to topic:', response, registrationToken, topic);
+            })
+                .catch((error) => {
+                    return console.log('Error subscribing to topic:', error);
+                });
+        }
+
+    });
+
+
+//notification from rtdb
+exports.sendRcommndNotifications = functions.database.ref('Spaces/{spaceId}/data')
+    .onUpdate((change, context) => {
+        console.log('function triggered')
+
+        const topic = change.after.ref.parent.key;
+        //change.after.ref.parent.child("online").on
+        //Write to Firestore: here we use the TransmitterError field as an example
+        const firestoreDb = admin.firestore();
+        const time = Date.now().toString()
+        console.log(change.after.ref.parent.key, change.after.val().being)
+
+        // if (change.after.val().currentLetter === "") {
+        //     return null;
+        // } else {
+        // const docRefçerence = firestoreDb.collection("Spaces").doc(topic).collection("words").doc(time);
+        // docRefçerence.set({ word: change.after.val().currentLetter, time: Date.now() })
+
+        const message = {
+            data: {
+                "body": "Hi",
+                "status": change.after.val().being,
+                'extra field': "extra data"
+            },
+            topic: topic
+        };
+
+        // Send a message to devices subscribed to the provided topic.
+        return admin.messaging().send(message)
+            .then((response) => {
+                // Response is a message ID string.
+                return console.log('Successfully sent message:', response);
+            })
+            .catch((error) => {
+                return console.log('Error sending message:', error);
+            });
+        //}accouts/{username}/paypalCaptureId
+
+    });
+
 // exports.onlineStatus = functions.database.ref('Spaces/{spaceId}/online').onUpdate((change, context) => {
 //     const value = change.after.val()
 //     const time = Date.now()

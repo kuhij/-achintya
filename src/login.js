@@ -159,6 +159,7 @@ export default function Login(params) {
             firebase.database().ref(`/Spaces/${spaceName}/`).update({
                 online: true,
                 balance: parseInt(amount),
+                subscription: spaceName
             })
             firebase.database().ref(`/Users/${username}/`).update({
                 currentSpace: spaceName,
@@ -211,7 +212,7 @@ export default function Login(params) {
 
             await firebase.database().ref(`/Users/${id}/mySpace`).once("value", function (snap) {
                 setSpaceName(snap.val())
-                history.push(`/space/${snap.val()}`);
+                //history.push(`/space/${snap.val()}`);
             })
             setRedirect(true)
 
